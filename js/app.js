@@ -1,6 +1,6 @@
-import * as T from './three.module.js';
-import {Water} from './Water.js';
-import {Sky} from './Sky.js';
+import * as T from './lib/three.module.js';
+import {Water} from './lib/Water.js';
+import {Sky} from './lib/Sky.js';
 import {SurfAudio} from './surf-audio.js';
 const main=document.querySelector('main'),input=document.querySelector('input'),button=document.querySelector('button[aria-label="고민 내려놓기"]'),form=document.querySelector('form'),status=document.querySelector('[role=status]');
 const scene=new T.Scene();scene.fog=new T.FogExp2(0x91becd,.0017);
@@ -35,7 +35,7 @@ const armGeo=new T.CylinderGeometry(.32,.53,1.45,12,2);armGeo.translate(0,.53,0)
 const directions=[[0,1,0],[.943,-.333,0],[-.471,-.333,.816],[-.471,-.333,-.816]].map(a=>new T.Vector3(...a));
 function pod(material){const g=new T.Group();g.add(new T.Mesh(coreGeo,material));for(const d of directions){const m=new T.Mesh(armGeo,material);m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d);g.add(m);}g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return g;}
 for(let i=0;i<11;i++){const p=pod(darkConcrete);p.position.set((i%4-1.5)*2.35+(Math.random()-.5),-.95+Math.floor(i/4)*.13,4+Math.floor(i/4)*1.9);p.rotation.set(Math.random()*3,Math.random()*6,Math.random()*3);p.scale.setScalar(1.25);scene.add(p);}
-const waterNormals=await new T.TextureLoader().loadAsync('./waternormals.jpg');waterNormals.wrapS=waterNormals.wrapT=T.RepeatWrapping;
+const waterNormals=await new T.TextureLoader().loadAsync('./src/waternormals.jpg');waterNormals.wrapS=waterNormals.wrapT=T.RepeatWrapping;
 const waterGeo=new T.PlaneGeometry(2,2,180,220),positions=waterGeo.attributes.position;
 for(let i=0;i<positions.count;i++){const x=positions.getX(i),v=(positions.getY(i)+1)*.5;positions.setXYZ(i,Math.sign(x)*x*x*1300,-32+v*v*2600,0);}waterGeo.computeBoundingSphere();
 const water=new Water(waterGeo,{textureWidth:512,textureHeight:512,waterNormals,sunDirection,sunColor:0xffefd4,waterColor:0x006ddd,distortionScale:3.2,fog:true});
