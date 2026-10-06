@@ -103,7 +103,7 @@ cloudMaterial.uniforms.clock.value=time;water.material.uniforms.time.value=time;
 for(let i=0;i<foamCount;i++){const [a,b,c,d]=seeds[i];let x=(a-.5)*40,z,y,s;const active=wz>-15&&wz<25;if(i<850){z=active?wz+(b-.5)*6:-35+b*55;y=height(x,z)+.06;s=.025+c*.055;if(active){y+=Math.sin(b*Math.PI)*c*1.9;x+=Math.sin(time*2+d*9)*.25;}}else{z=2+b*10;x=(a-.5)*15;y=height(x,z)+.1;s=.02+c*.04;if(active){y+=Math.abs(Math.sin(time*3+c*30))*c*3;s*=1.4;}}dummy.position.set(x,y,z);dummy.scale.set(s,s*(active?1: .3),s);dummy.updateMatrix();foam.setMatrixAt(i,dummy.matrix);}foam.instanceMatrix.needsUpdate=true;
 for(const w of worries){if(w.p.position.y>w.target.y){w.vy-=dt*17;w.p.position.y+=w.vy*dt;w.p.rotation.y+=dt*.35;if(w.p.position.y<w.target.y){w.p.position.y=w.target.y;w.vy=-w.vy*.23;}}}
 for(let i=pieces.length-1;i>=0;i--){const p=pieces[i];p.v.y-=dt*8;p.m.position.addScaledVector(p.v,dt);p.m.rotation.x+=p.spin.x*dt;p.m.rotation.z+=p.spin.z*dt;const age=time-p.born;if(age>1.7)p.m.scale.multiplyScalar(Math.exp(-dt*1.3));if(age>5){scene.remove(p.m);pieces.splice(i,1);}}
-for(let i=labels.length-1;i>=0;i--){const l=labels[i],age=time-l.born;l.s.position.copy(l.p.position).add(new T.Vector3(0,1.5+l.dy,0));l.s.material.opacity=Math.min(1,age*3);if(!l.p.parent){scene.remove(l.s);l.tex.dispose();l.s.material.dispose();labels.splice(i,1);}}
+for(let i=labels.length-1;i>=0;i--){const l=labels[i],age=time-l.born;l.s.position.copy(l.p.position).add(new T.Vector3(0,2+l.dy,0));l.s.material.opacity=Math.min(1,age*3);if(!l.p.parent){scene.remove(l.s);l.tex.dispose();l.s.material.dispose();labels.splice(i,1);}}
 camera.position.x+=(pointerX-camera.position.x)*dt*.6;renderer.render(scene,camera);
 });
 window.addEventListener('pageshow',()=>{previous=performance.now();});
