@@ -4,7 +4,7 @@ import {Sky} from './lib/Sky.js';
 import {SurfAudio} from './surf-audio.js';
 const main=document.querySelector('main'),input=document.querySelector('input'),button=document.querySelector('button[aria-label="고민 내려놓기"]'),form=document.querySelector('form'),status=document.querySelector('[role=status]');
 const scene=new T.Scene();scene.fog=new T.FogExp2(0x91becd,.0017);
-const camera=new T.PerspectiveCamera(49,1,.1,20000);camera.position.set(0,6.2,16);camera.lookAt(0,3.9,-22);
+const camera=new T.PerspectiveCamera(49,1,.1,20000);camera.position.set(0,6.2,16);camera.lookAt(0,2.9,-22);
 const renderer=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.outputColorSpace=T.SRGBColorSpace;
 renderer.setClearColor(0x67baf0,1);renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;main.prepend(renderer.domElement);
@@ -34,7 +34,7 @@ const darkConcrete=new T.MeshStandardMaterial({color:0x35434a,roughness:.84,map:
 const armGeo=new T.CylinderGeometry(.32,.53,1.45,12,2);armGeo.translate(0,.53,0);const coreGeo=new T.SphereGeometry(.52,12,8);
 const directions=[[0,1,0],[.943,-.333,0],[-.471,-.333,.816],[-.471,-.333,-.816]].map(a=>new T.Vector3(...a));
 function pod(material){const g=new T.Group();g.add(new T.Mesh(coreGeo,material));for(const d of directions){const m=new T.Mesh(armGeo,material);m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d);g.add(m);}g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return g;}
-for(let i=0;i<11;i++){const p=pod(darkConcrete);p.position.set((i%4-1.5)*2.35+(Math.random()-.5),-.95+Math.floor(i/4)*.13,4+Math.floor(i/4)*1.9);p.rotation.set(Math.random()*3,Math.random()*6,Math.random()*3);p.scale.setScalar(1.25);scene.add(p);}
+for(let i=0;i<11;i++){const p=pod(darkConcrete);p.position.set((i%4-1.5)*2.35+(Math.random()-.5),-.6+Math.floor(i/4)*.13,3.6+Math.floor(i/4)*1.6);p.rotation.set(Math.random()*3,Math.random()*6,Math.random()*3);p.scale.setScalar(1.25);scene.add(p);}
 const waterNormals=await new T.TextureLoader().loadAsync('./src/waternormals.jpg');waterNormals.wrapS=waterNormals.wrapT=T.RepeatWrapping;
 const waterGeo=new T.PlaneGeometry(2,2,180,220),positions=waterGeo.attributes.position;
 for(let i=0;i<positions.count;i++){const x=positions.getX(i),v=(positions.getY(i)+1)*.5;positions.setXYZ(i,Math.sign(x)*x*x*1300,-32+v*v*2600,0);}waterGeo.computeBoundingSphere();
@@ -63,7 +63,7 @@ for(int i=0;i<4;i++){
 vec3 blueWater=mix(albedo,vec3(.006,.095,.34),.27);
 vec3 foamLight=vec3(.83,.95,1.)+min(specularLight,vec3(2.5))*.65;
 vec3 outgoingLight=mix(blueWater,foamLight,clamp(crestFoam+smallFoam+ringFoam,0.,.96));`);
-let time=0,nextWave=Infinity,waveStart=-100,broken=false;const worries=[],pieces=[],labels=[];const dummy=new T.Object3D();
+let lastActive=0,time=0,nextWave=Infinity,waveStart=-100,broken=false;const worries=[],pieces=[],labels=[];const dummy=new T.Object3D();
 const foamCount=1250,foam=new T.InstancedMesh(new T.SphereGeometry(1,6,4),new T.MeshPhysicalMaterial({color:0xe8faff,roughness:.18,metalness:0,clearcoat:1,clearcoatRoughness:.08,envMapIntensity:1.6,transparent:true,opacity:.84}),foamCount);foam.instanceMatrix.setUsage(T.DynamicDrawUsage);foam.frustumCulled=false;scene.add(foam);const seeds=Array.from({length:foamCount},()=>[Math.random(),Math.random(),Math.random(),Math.random()]);
 // Four bounded expanding foam rings with round reflective bubbles.
 const ringEvents=Array.from({length:4},()=>({x:0,z:0,born:-100,strength:1}));let ringCursor=0,nextRing=1.5;
@@ -88,20 +88,22 @@ function updateFoamRings(){
 }
 function waveZ(){return -48+(time-waveStart)*11;}
 function height(x,z){const small=Math.sin(x*1.4+z*.8-time*1.7)*.13+Math.sin(z*2.8+x*.5-time*2.9)*.075+Math.sin(x*4-z*3+time*1.9)*.035;const swell=Math.sin(z*.42-time*1.65+Math.sin(x*.19)*.4)*.28;const dz=z-waveZ();return -.65+small+swell+Math.exp(-dz*dz/9)*2.6;}
-function textLabel(text,p){const c=document.createElement('canvas');c.width=1024;c.height=256;const x=c.getContext('2d');x.font='500 43px Arial, sans-serif';x.textAlign='center';x.textBaseline='middle';x.shadowColor='#102e42';x.shadowBlur=10;x.fillStyle='#ffffff';const chars=Array.from(text),lines=[];let line='';for(const ch of chars){if(x.measureText(line+ch).width>930){lines.push(line);line=ch;}else line+=ch;}lines.push(line);const shown=lines.slice(0,3);if(lines.length>3)shown[2]=shown[2].slice(0,-1)+'…';shown.forEach((s,i)=>x.fillText(s,512,128+(i-(shown.length-1)/2)*58));const tex=new T.CanvasTexture(c);const s=new T.Sprite(new T.SpriteMaterial({map:tex,transparent:true,depthTest:false}));s.scale.set(4.9,1.23,1);scene.add(s);labels.push({s,p,born:time,tex});}
-function addWorry(text){const n=worries.length,p=pod(concrete);const target=new T.Vector3((n%3-1)*1.75+(Math.random()-.5)*.5,.35+Math.floor(n/3)*1.05,2.3+(n%2)*.35);p.position.copy(target);p.position.y+=9;p.rotation.set(Math.random()*2,Math.random()*6,Math.random()*2);scene.add(p);const item={p,target,vy:0,born:time};worries.push(item);textLabel(text,p);if(nextWave===Infinity)nextWave=time+13;status.textContent='고민이 테트라포드로 쌓였습니다. 잠시 후 파도가 데려갑니다.';}
+function textLabel(text,p,dy=0){const c=document.createElement('canvas');c.width=1024;c.height=256;const x=c.getContext('2d');x.font='500 43px Arial, sans-serif';x.textAlign='center';x.textBaseline='middle';x.shadowColor='#102e42';x.shadowBlur=10;x.fillStyle='#ffffff';const chars=Array.from(text),lines=[];let line='';for(const ch of chars){if(x.measureText(line+ch).width>930){lines.push(line);line=ch;}else line+=ch;}lines.push(line);const shown=lines.slice(0,3);if(lines.length>3)shown[2]=shown[2].slice(0,-1)+'…';shown.forEach((s,i)=>x.fillText(s,512,128+(i-(shown.length-1)/2)*58));const tex=new T.CanvasTexture(c);const s=new T.Sprite(new T.SpriteMaterial({map:tex,transparent:true,depthTest:false}));s.scale.set(4.9,1.23,1);scene.add(s);labels.push({s,p,born:time,tex,dy});}
+function addWorry(text){const n=worries.length,p=pod(concrete);const target=new T.Vector3((n%3-1)*1.3+(Math.random()-.5)*.3,.35+Math.floor(n/3)*.85,2.3+(n%2)*.25);p.position.copy(target);p.position.y+=9;p.rotation.set(Math.random()*2,Math.random()*6,Math.random()*2);scene.add(p);const item={p,target,vy:0,born:time};worries.push(item);textLabel(text,p,n%3===1?.55:0);status.textContent='고민이 테트라포드로 쌓였습니다. 가만히 기다리면 파도가 데려갑니다.';}
 function shatter(){addFoamRing(-1.5,2.8,1);addFoamRing(1.7,4,1);for(const w of worries){for(let j=0;j<7;j++){const m=new T.Mesh(j<4?armGeo:coreGeo,concrete);m.position.copy(w.p.position).add(new T.Vector3((Math.random()-.5)*.8,Math.random()*.5,(Math.random()-.5)*.8));m.scale.setScalar(.45+Math.random()*.3);scene.add(m);pieces.push({m,v:new T.Vector3((Math.random()-.5)*7,2+Math.random()*5,4+Math.random()*4),spin:new T.Vector3(Math.random()*4,Math.random()*4,Math.random()*4),born:time});}scene.remove(w.p);}worries.length=0;status.textContent='고민이 파도에 부서져 흩어졌습니다.';}
 form.addEventListener('submit',e=>{e.preventDefault();const text=input.value.trim();if(!text)return;if(worries.length>=15){nextWave=Math.min(nextWave,time+.2);input.placeholder='곧 파도가 와요. 잠시만 기다려요';return;}addWorry(text);input.value='';input.blur();input.placeholder='또 다른 고민도 내려놓아요';});
 input.disabled=false;button.disabled=false;
+const IDLE=3.5,countdown=document.querySelector('.countdown');for(const e of ['pointerdown','keydown','input'])addEventListener(e,()=>{lastActive=time;},true);
+function updateCountdown(wz){const idle=time-lastActive,waiting=worries.length&&nextWave===Infinity&&wz>20&&idle>=IDLE;countdown.classList.toggle('show',!!waiting);if(!waiting)return;const left=Math.ceil(IDLE+5-idle);if(countdown.textContent!==String(left))countdown.textContent=left;if(idle>=IDLE+5){nextWave=time;countdown.classList.remove('show');}}
 function resize(){const w=main.clientWidth,h=main.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}new ResizeObserver(resize).observe(main);resize();
 let previous=performance.now();let pointerX=0;main.addEventListener('pointermove',e=>{if(e.pointerType==='mouse')pointerX=(e.clientX/main.clientWidth-.5)*.3;});
 renderer.setAnimationLoop(()=>{const now=performance.now(),dt=Math.min((now-previous)/1000,.04);previous=now;if(document.hidden)return;time+=dt;
-if(time>=nextWave){waveStart=time;nextWave=Infinity;broken=false;}const wz=waveZ();if(!broken&&wz>1&&wz<20){shatter();broken=true;}
+if(time>=nextWave){waveStart=time;nextWave=Infinity;broken=false;}const wz=waveZ();updateCountdown(wz);if(!broken&&wz>1&&wz<20){shatter();broken=true;}
 cloudMaterial.uniforms.clock.value=time;water.material.uniforms.time.value=time;water.material.uniforms.waveFront.value=wz;surf.update(time,wz);updateFoamRings();
 for(let i=0;i<foamCount;i++){const [a,b,c,d]=seeds[i];let x=(a-.5)*40,z,y,s;const active=wz>-15&&wz<25;if(i<850){z=active?wz+(b-.5)*6:-35+b*55;y=height(x,z)+.06;s=.025+c*.055;if(active){y+=Math.sin(b*Math.PI)*c*1.9;x+=Math.sin(time*2+d*9)*.25;}}else{z=2+b*10;x=(a-.5)*15;y=height(x,z)+.1;s=.02+c*.04;if(active){y+=Math.abs(Math.sin(time*3+c*30))*c*3;s*=1.4;}}dummy.position.set(x,y,z);dummy.scale.set(s,s*(active?1: .3),s);dummy.updateMatrix();foam.setMatrixAt(i,dummy.matrix);}foam.instanceMatrix.needsUpdate=true;
 for(const w of worries){if(w.p.position.y>w.target.y){w.vy-=dt*17;w.p.position.y+=w.vy*dt;w.p.rotation.y+=dt*.35;if(w.p.position.y<w.target.y){w.p.position.y=w.target.y;w.vy=-w.vy*.23;}}}
 for(let i=pieces.length-1;i>=0;i--){const p=pieces[i];p.v.y-=dt*8;p.m.position.addScaledVector(p.v,dt);p.m.rotation.x+=p.spin.x*dt;p.m.rotation.z+=p.spin.z*dt;const age=time-p.born;if(age>1.7)p.m.scale.multiplyScalar(Math.exp(-dt*1.3));if(age>5){scene.remove(p.m);pieces.splice(i,1);}}
-for(let i=labels.length-1;i>=0;i--){const l=labels[i],age=time-l.born;l.s.position.copy(l.p.position).add(new T.Vector3(0,1.85,0));l.s.material.opacity=Math.min(1,age*3);if(!l.p.parent){scene.remove(l.s);l.tex.dispose();l.s.material.dispose();labels.splice(i,1);}}
+for(let i=labels.length-1;i>=0;i--){const l=labels[i],age=time-l.born;l.s.position.copy(l.p.position).add(new T.Vector3(0,1.85+l.dy,0));l.s.material.opacity=Math.min(1,age*3);if(!l.p.parent){scene.remove(l.s);l.tex.dispose();l.s.material.dispose();labels.splice(i,1);}}
 camera.position.x+=(pointerX-camera.position.x)*dt*.6;renderer.render(scene,camera);
 });
 window.addEventListener('pageshow',()=>{previous=performance.now();});

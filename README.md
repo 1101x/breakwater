@@ -25,4 +25,9 @@ js/app.js           Three.js 바다, 하늘, 테트라포드, 파괴 효과
 js/surf-audio.js    파도 소리
 js/lib/             Three.js 및 Water/Sky 애드온
 src/waternormals.jpg 수면 노멀맵
+src/waves.mp3        파도 소리
 ```
+
+## 음원
+
+파도 소리: [Sea: Waves](https://bigsoundbank.com/sea-waves_s0266.html) — BigSoundBank, CC0
