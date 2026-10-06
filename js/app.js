@@ -34,7 +34,7 @@ const darkConcrete=new T.MeshStandardMaterial({color:0x35434a,roughness:.84,map:
 const armGeo=new T.CylinderGeometry(.32,.53,1.45,12,2);armGeo.translate(0,.53,0);const coreGeo=new T.SphereGeometry(.52,12,8);
 const directions=[[0,1,0],[.943,-.333,0],[-.471,-.333,.816],[-.471,-.333,-.816]].map(a=>new T.Vector3(...a));
 function pod(material){const g=new T.Group();g.add(new T.Mesh(coreGeo,material));for(const d of directions){const m=new T.Mesh(armGeo,material);m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d);g.add(m);}g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return g;}
-for(let i=0;i<11;i++){const p=pod(darkConcrete);p.position.set((i%4-1.5)*2.35+(Math.random()-.5),-.6+Math.floor(i/4)*.13,3.6+Math.floor(i/4)*1.6);p.rotation.set(Math.random()*3,Math.random()*6,Math.random()*3);p.scale.setScalar(1.25);scene.add(p);}
+for(let i=0;i<11;i++){const p=pod(darkConcrete);p.position.set((i%4-1.5)*3.6+(Math.random()-.5)*1.4+(Math.floor(i/4)%2)*1.6,-.6+Math.floor(i/4)*.13,3.4+Math.floor(i/4)*2.2+(Math.random()-.5)*.8);p.rotation.set(Math.random()*3,Math.random()*6,Math.random()*3);p.scale.setScalar(1.25);scene.add(p);}
 const waterNormals=await new T.TextureLoader().loadAsync('./src/waternormals.jpg');waterNormals.wrapS=waterNormals.wrapT=T.RepeatWrapping;
 const waterGeo=new T.PlaneGeometry(2,2,180,220),positions=waterGeo.attributes.position;
 for(let i=0;i<positions.count;i++){const x=positions.getX(i),v=(positions.getY(i)+1)*.5;positions.setXYZ(i,Math.sign(x)*x*x*1300,-32+v*v*2600,0);}waterGeo.computeBoundingSphere();
